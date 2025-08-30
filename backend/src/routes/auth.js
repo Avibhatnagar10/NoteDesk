@@ -1,49 +1,66 @@
-import express from "express";
-import jwt from "jsonwebtoken";
-import User from "../models/User.js";
-import dotenv from "dotenv";
+import express from 'express';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import User from '../models/User.js';
 
-dotenv.config();
 const router = express.Router();
 
-// Signup
-router.post("/signup", async (req, res) => {
+// ----------------- SIGNUP -----------------
+router.post('/signup', async (req, res) => {
+  console.log("📩 Incoming body:", req.body);
   try {
-    const { username, password } = req.body;
+    const { username, email, password } = req.body;
 
     // Check if user exists
-    const existingUser = await User.findOne({ username });
-    if (existingUser) return res.status(400).json({ message: "Username already taken" });
+    const existingUser = await User.findOne({ $or: [{ username }, { email }] });
+    if (existingUser) {
+      return res.status(400).json({ message: 'Username or email already exists' });
+    }
 
-    const user = new User({ username, password });
-    await user.save();
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(password, salt);
 
-    res.status(201).json({ message: "User created" });
-  } catch (err) {
-    res.status(400).json({ message: err.message });
+    // Save user
+    const newUser = new User({ username, email,  passwordHash });
+    await newUser.save();
+
+    res.status(201).json({ message: 'User created successfully ✅' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
-// Login
-router.post("/login", async (req, res) => {
+// ----------------- LOGIN -----------------
+router.post('/login', async (req, res) => {
+  console.log("📩 Incoming body:", req.body);
   try {
-    const { username, password } = req.body;
+    const { username, email, password } = req.body;
 
-    const user = await User.findOne({ username });
-    if (!user) return res.status(401).json({ message: "Invalid credentials" });
+    // Find user by username or email
+    const user = await User.findOne({ $or: [{ username }, { email }] });
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid username/email or password' });
+    }
 
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch) return res.status(401).json({ message: "Invalid credentials" });
+    // Compare password
+    const isMatch = await bcrypt.compare(password, user.passwordHash);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Invalid username/email or password' });
+    }
 
+    // Generate JWT
     const token = jwt.sign(
-      { id: user._id, username: user.username },
+      { userId: user._id, username: user.username },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: '7d' }
     );
 
-    res.json({ token, user: { id: user._id, username: user.username } });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(200).json({message:"Login Succesful 🎉", token, username: user.username });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
