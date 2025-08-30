@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   DndContext,
   PointerSensor,
@@ -455,7 +455,6 @@ const MainContent = () => {
     canRedo,
   } = useHistoryState<Block[]>(initialBlocks);
   const [focusId, setFocusId] = useState<number | null>(null);
-  const [saved, setSaved] = useState(true);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -483,8 +482,6 @@ const MainContent = () => {
       return b;
     });
     setBlocks(updatedBlocks);
-    setSaved(false);
-    setTimeout(() => setSaved(true), 500);
   };
 
   const handleAddBlock = (currentBlockId: number) => {
