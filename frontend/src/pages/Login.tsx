@@ -1,0 +1,314 @@
+"use client";
+
+import React, { useState } from "react";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/solid";
+
+// Password Input Component
+const PasswordInput = ({
+  name,
+  value,
+  onChange,
+  placeholder,
+  showPassword,
+  setShowPassword,
+}: {
+  name: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  placeholder: string;
+  showPassword: boolean;
+  setShowPassword: React.Dispatch<React.SetStateAction<boolean>>;
+}) => (
+  <div className="relative">
+    <input
+      type={showPassword ? "text" : "password"}
+      name={name}
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+      className="w-full px-4 py-3 pr-10 bg-[#1C1C24] text-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-400 transition-colors"
+    />
+    <button
+      type="button"
+      onClick={() => setShowPassword((prev) => !prev)}
+      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200"
+      aria-label={showPassword ? "Hide password" : "Show password"}
+    >
+      {showPassword ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+    </button>
+  </div>
+);
+
+export default function LoginPage() {
+  const [activeTab, setActiveTab] = useState<"login" | "signup">("login");
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [registeredUsers, setRegisteredUsers] = useState<
+    { username: string; email: string; password: string }[]
+  >([]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const validate = () => {
+    let valid = true;
+    const newErrors: { [key: string]: string } = {};
+
+    if (activeTab === "signup") {
+      if (!/^[a-zA-Z0-9]{3,}$/.test(formData.username)) {
+        newErrors.username = "Username must be 3+ chars, no special symbols.";
+        valid = false;
+      }
+      if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
+        newErrors.email = "Invalid email format.";
+        valid = false;
+      }
+      if (
+        !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/.test(
+          formData.password
+        )
+      ) {
+        newErrors.password =
+          "Password must be 6+ chars, with upper, lower, number & symbol.";
+        valid = false;
+      }
+      if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = "Passwords do not match.";
+        valid = false;
+      }
+    } else {
+      if (!formData.username) {
+        newErrors.username = "Username or Email is required.";
+        valid = false;
+      }
+      if (!formData.password) {
+        newErrors.password = "Password is required.";
+        valid = false;
+      }
+    }
+
+    setErrors(newErrors);
+    return valid;
+  };
+
+  const handleSignup = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validate()) return;
+
+    if (registeredUsers.some((u) => u.email === formData.email)) {
+      alert("User already registered. Please login.");
+      setActiveTab("login");
+      return;
+    }
+
+    setRegisteredUsers((prev) => [
+      ...prev,
+      { username: formData.username, email: formData.email, password: formData.password },
+    ]);
+
+    // alert("Signup successful! Please login now.");
+    setFormData({ username: "", email: "", password: "", confirmPassword: "" });
+    setActiveTab("login");
+  };
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validate()) return;
+
+    const user = registeredUsers.find(
+      (u) =>
+        (u.email === formData.username || u.username === formData.username) &&
+        u.password === formData.password
+    );
+
+    if (!user) {
+      alert("Invalid credentials or user not registered. Please sign up.");
+      return;
+    }
+
+    // alert(`Welcome ${user.username}! Redirecting to dashboard...`);
+    window.location.href = "/dashboard";
+  };
+
+  const formContent = activeTab === "login" ? (
+    <form className="space-y-6" onSubmit={handleLogin}>
+      <div className="space-y-2">
+        <input
+          type="text"
+          name="username"
+          placeholder="Username or Email"
+          value={formData.username}
+          onChange={handleChange}
+          className="w-full px-4 py-3 bg-[#1C1C24] text-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-400 transition-colors"
+        />
+        {errors.username && <p className="text-red-500 text-sm mt-1">{errors.username}</p>}
+      </div>
+
+      <div className="space-y-2">
+        <PasswordInput
+          name="password"
+          placeholder="Password"
+          value={formData.password}
+          onChange={handleChange}
+          showPassword={showPassword}
+          setShowPassword={setShowPassword}
+        />
+        {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
+      </div>
+
+      <button
+        type="submit"
+        className="w-full py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold hover:opacity-90 transition-opacity shadow-lg"
+      >
+        Login
+      </button>
+      <div className="text-center text-gray-400 text-sm pt-4">
+        New to Note<span className="text-indigo-400">worthy</span>?
+        <button
+          type="button"
+          onClick={() => setActiveTab("signup")}
+          className="text-indigo-400 hover:underline ml-1 font-medium"
+        >
+          Sign Up
+        </button>
+      </div>
+    </form>
+  ) : (
+    <form className="space-y-6" onSubmit={handleSignup}>
+      <div className="space-y-2">
+        <input
+          type="text"
+          name="username"
+          placeholder="Username"
+          value={formData.username}
+          onChange={handleChange}
+          className="w-full px-4 py-3 bg-[#1C1C24] text-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-400 transition-colors"
+        />
+        {errors.username && <p className="text-red-500 text-sm mt-1">{errors.username}</p>}
+      </div>
+
+      <div className="space-y-2">
+        <input
+          type="email"
+          name="email"
+          placeholder="Email"
+          value={formData.email}
+          onChange={handleChange}
+          className="w-full px-4 py-3 bg-[#1C1C24] text-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-400 transition-colors"
+        />
+        {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+      </div>
+
+      <div className="space-y-2">
+        <PasswordInput
+          name="password"
+          placeholder="Password"
+          value={formData.password}
+          onChange={handleChange}
+          showPassword={showPassword}
+          setShowPassword={setShowPassword}
+        />
+        {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
+      </div>
+
+      <div className="space-y-2">
+        <PasswordInput
+          name="confirmPassword"
+          placeholder="Confirm Password"
+          value={formData.confirmPassword}
+          onChange={handleChange}
+          showPassword={showConfirmPassword}
+          setShowPassword={setShowConfirmPassword}
+        />
+        {errors.confirmPassword && (
+          <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>
+        )}
+      </div>
+
+      <button
+        type="submit"
+        className="w-full py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold hover:opacity-90 transition-opacity shadow-lg"
+      >
+        Sign Up
+      </button>
+      <div className="text-center text-gray-400 text-sm pt-4">
+        Already have an account?
+        <button
+          type="button"
+          onClick={() => setActiveTab("login")}
+          className="text-indigo-400 hover:underline ml-1 font-medium"
+        >
+          Log In
+        </button>
+      </div>
+    </form>
+  );
+
+  return (
+    <div className="relative min-h-screen flex flex-col items-center justify-center bg-[#0B0B0F] text-white p-4">
+      {/* Animated blurred background */}
+      <style>{`
+        @keyframes blob {
+          0% { transform: scale(1) translate(0, 0); }
+          33% { transform: scale(1.1) translate(30px, -50px); }
+          66% { transform: scale(0.9) translate(-20px, 20px); }
+          100% { transform: scale(1) translate(0, 0); }
+        }
+        .animate-blob { animation: blob 7s infinite; }
+        .animation-delay-2000 { animation-delay: 2s; }
+        .animation-delay-4000 { animation-delay: 4s; }
+      `}</style>
+
+      <div className="absolute inset-0 -z-10 overflow-hidden">
+        <div className="absolute w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob top-1/2 left-1/4"></div>
+        <div className="absolute w-72 h-72 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000 top-1/3 left-2/3"></div>
+        <div className="absolute w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000 bottom-1/4 right-1/4"></div>
+        <div className="absolute w-72 h-72 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-6000 bottom-1/3 left-1/2"></div>
+      </div>
+
+      <div className="bg-[#1A1A24]/80 backdrop-blur-lg rounded-3xl shadow-2xl p-10 w-full max-w-sm border border-gray-800">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold tracking-wide">
+            Note<span className="text-indigo-400">worthy</span>
+          </h1>
+          <p className="text-gray-400 text-sm mt-2">Your secure notes, anywhere.</p>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex justify-center mb-8 border-b border-gray-700">
+          <button
+            onClick={() => setActiveTab("login")}
+            className={`flex-1 py-2 text-sm font-medium transition ${
+              activeTab === "login"
+                ? "text-indigo-400 border-b-2 border-indigo-400"
+                : "text-gray-400 hover:text-gray-200"
+            }`}
+          >
+            Login
+          </button>
+          <button
+            onClick={() => setActiveTab("signup")}
+            className={`flex-1 py-2 text-sm font-medium transition ${
+              activeTab === "signup"
+                ? "text-indigo-400 border-b-2 border-indigo-400"
+                : "text-gray-400 hover:text-gray-200"
+            }`}
+          >
+            Sign Up
+          </button>
+        </div>
+
+        {formContent}
+      </div>
+    </div>
+  );
+}
