@@ -1,76 +1,89 @@
-import express from "express";
-import mongoose from "mongoose";
-import { createClient } from "redis";
-import dotenv from "dotenv";
-import authRoutes from "./routes/auth.js";
-import notesRoutes from "./routes/notes.js";
+import express from 'express';
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+import cors from 'cors';
+import http from 'http';
+import { Server } from 'socket.io';
+import { createClient } from 'redis';
+
+import authRoutes from './routes/auth.js';
+// import userRoutes from './routes/users.js';
+import { socketAuth } from './middleware/auth.js';
+import { verifyJwt } from './middleware/auth.js';
 
 dotenv.config();
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 
-// Global Redis client
+// create http server
+const server = http.createServer(app);
+
+// initialize socket.io
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+  },
+});
+
+// socket auth middleware
+io.use(socketAuth);
+
+io.on("connection", (socket) => {
+  console.log("New client connected", socket.id);
+
+  // clean up on disconnect
+  socket.on("disconnect", () => {
+    console.log("Client disconnected", socket.id);
+  });
+});
+
+// Routes
+app.use('/api/auth', authRoutes);
+app.get('/', (req, res) => {
+  res.send('API is running...');
+});
+app.get('/dashboard', verifyJwt, (req, res) => {
+  res.send(`Welcome to your dashboard, user ${req.user.username}`);
+});
+app.get('/profile', verifyJwt, (req, res) => {
+  res.send(`This is your profile, user ${req.user.email}`);
+});
+app.get('/notes', verifyJwt, (req, res) => {
+  res.send(`Here are your notes, user ${req.user.email}`);
+});
+
+
 let redisClient;
 
-// Start server and connect databases
+// function to start everything
 async function startServer() {
   try {
-    // --------- MongoDB Connection ---------
-    if (!process.env.MONGO_URI) throw new Error("MONGO_URI not set in .env");
-    await mongoose.connect(process.env.MONGO_URI);
-    console.log("✅ MongoDB connected");
-
-    // --------- Redis Connection ---------
-    if (!process.env.REDIS_HOST || !process.env.REDIS_PORT) 
-      throw new Error("REDIS_HOST or REDIS_PORT not set in .env");
-
-    redisClient = createClient({
-      socket: {
-        host: process.env.REDIS_HOST,
-        port: Number(process.env.REDIS_PORT),
-      },
+    // MongoDB
+    await mongoose.connect(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
     });
+    console.log("✅ Connected to MongoDB");
 
-    redisClient.on("error", (err) => console.error("❌ Redis error:", err));
+    // Redis
+    redisClient = createClient();
+    redisClient.on("error", (err) => console.error("Redis Client Error", err));
     await redisClient.connect();
-    console.log("✅ Redis connected");
+    console.log("✅ Connected to Redis");
 
-    // --------- Register Routes ---------
-    // Make redisClient available in request object
-    app.use((req, res, next) => {
-      req.redisClient = redisClient;
-      next();
-    });
-
-    app.use("/api/auth", authRoutes);
-    app.use("/api/notes", notesRoutes);
-
-    // --------- Test Route ---------
-    app.get("/", async (req, res) => {
-      try {
-        await redisClient.set("test", "Hello from Redis!");
-        const value = await redisClient.get("test");
-        res.send(`Server running with MongoDB + Redis 🚀 | Redis test: ${value}`);
-      } catch (err) {
-        res.status(500).send("Redis error: " + err.message);
-      }
-    });
-
-    // --------- Start Express Server ---------
+    // Start HTTP + Socket.io server
     const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-    });
+    server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 
-  } catch (err) {
-    console.error("❌ Startup error:", err);
+  } catch (error) {
+    console.error("❌ Error starting server:", error);
     process.exit(1);
   }
 }
 
-// Initialize everything
 startServer();
 
-// Export redisClient for use in other modules if needed
-export { redisClient };
+export { io, redisClient };
