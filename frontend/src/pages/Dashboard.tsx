@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 // import { useGeolocated } from "react-geolocated";
 
 // Internal CSS for custom variables and animations
@@ -57,9 +58,7 @@ const notes = [
  
 ];
 
-const tags = ["Work", "Personal", "Travel", "Ideas", "Goals", "Recipes"];
-
-const App = () => {
+export default function Dashboard() {
   const [search, setSearch] = useState("");
   // const { coords, isGeolocationAvailable, isGeolocationEnabled } = useGeolocated({
   //   positionOptions: {
@@ -67,7 +66,7 @@ const App = () => {
   //   },
   //   userDecisionTimeout: 5000,
   // });
-
+  const navigate = useNavigate();
   return (
     <>
       <style>{customStyles}</style>
@@ -227,22 +226,25 @@ const App = () => {
             {/* Toolbar */}
             <div className="flex items-center justify-between">
               <div className="flex gap-4">
-                <button className="flex items-center gap-2 rounded-full bg-blue-500 px-6 py-3 text-white font-semibold shadow-md hover:bg-blue-600 transition-colors duration-200">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="w-5 h-5"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M5 12h14" />
-                    <path d="M12 5v14" />
-                  </svg>
-                  New Note
-                </button>
+                  <button
+        onClick={() => navigate("/notesEditor")}
+        className="flex items-center gap-2 rounded-full bg-blue-500 px-6 py-3 text-white font-semibold shadow-md hover:bg-blue-600 transition-colors duration-200"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-5 h-5"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M5 12h14" />
+          <path d="M12 5v14" />
+        </svg>
+        New Note
+      </button>
 
                 <button className="flex items-center gap-2 rounded-full border border-gray-600 px-6 py-3 text-gray-300 hover:bg-gray-700 transition-colors duration-200">
                   <svg
@@ -518,5 +520,3 @@ const App = () => {
     </>
   );
 };
-
-export default App;
