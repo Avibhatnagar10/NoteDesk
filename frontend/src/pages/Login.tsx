@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { use, useState } from "react";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/solid";
-import '../index.css'
-
+import "../index.css";
 
 // Password Input Component
 const PasswordInput = ({
@@ -106,47 +105,67 @@ export default function LoginPage() {
     return valid;
   };
 
-  const handleSignup = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validate()) return;
+ const handleSignup = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!validate()) return;
 
-    if (registeredUsers.some((u) => u.email === formData.email)) {
-      alert("User already registered. Please login.");
-      setActiveTab("login");
-      return;
-    }
-
-    setRegisteredUsers((prev) => [
-      ...prev,
-      {
+  try {
+    const res = await fetch("https://notedesk-backend.onrender.com/api/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
         username: formData.username,
         email: formData.email,
         password: formData.password,
-      },
-    ]);
+      }),
+    });
 
-    // alert("Signup successful! Please login now.");
-    setFormData({ username: "", email: "", password: "", confirmPassword: "" });
-    setActiveTab("login");
-  };
+    const data = await res.json();
 
-  const handleLogin = (e: React.FormEvent) => {
+    if (res.ok) {
+      // alert("Signup successful! Please login.");
+      // reset form and switch to login tab
+      setFormData({ username: "", email: "", password: "", confirmPassword: "" });
+      setActiveTab("login");
+    } else {
+      alert(data.message || "Signup failed");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Server error. Please try again later.");
+  }
+};
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
 
-    const user = registeredUsers.find(
-      (u) =>
-        (u.email === formData.username || u.username === formData.username) &&
-        u.password === formData.password
-    );
+    try {
+      const res = await fetch("https://notedesk-backend.onrender.com/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: formData.username,
+          email: formData.username, // can be email or username
+          password: formData.password,
+        }),
+      });
 
-    if (!user) {
-      alert("Invalid credentials or user not registered. Please sign up.");
-      return;
+      const data = await res.json();
+
+      if (res.ok) {
+        // Save JWT in localStorage
+        localStorage.setItem("token", data.token);
+
+        // redirect to dashboard
+        window.location.href = "/dashboard";
+      } else {
+        alert(data.message || "Invalid credentials");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Server error. Please try again later.");
     }
-
-    // alert(`Welcome ${user.username}! Redirecting to dashboard...`);
-    window.location.href = "/dashboard";
   };
 
   const formContent =
@@ -277,11 +296,11 @@ export default function LoginPage() {
     );
 
   return (
-    < div className=" bg-gradient-to-br from-black to-gray-800    fixed inset-0 ">
-    <div className="relative min-h-screen flex items-center justify-center  text-white p-4">
-      {/* Animated blurred blobs */}
-   
-{/* 
+    <div className=" bg-gradient-to-br from-black to-gray-800    fixed inset-0 ">
+      <div className="relative min-h-screen flex items-center justify-center  text-white p-4">
+        {/* Animated blurred blobs */}
+
+        {/* 
       <div className="absolute inset-0 -z-10 overflow-hidden">
      
         <div className="absolute w-72 h-72 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob top-1/4 left-1/3"></div>
@@ -289,43 +308,43 @@ export default function LoginPage() {
         <div className="absolute w-72 h-72 bg-gradient-to-br from-pink-500 to-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000 bottom-1/4 left-1/2"></div>
       </div> */}
 
-      <div className="bg-[#1A1A24]/80 backdrop-blur-lg rounded-3xl shadow-2xl p-10 w-full max-w-sm border border-gray-800">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold tracking-wide">
-            Note<span className="text-indigo-400">Desk</span>
-          </h1>
-          <p className="text-gray-400 text-sm mt-2">
-            Your secure notes, anywhere.
-          </p>
-        </div>
+        <div className="bg-[#1A1A24]/80 backdrop-blur-lg rounded-3xl shadow-2xl p-10 w-full max-w-sm border border-gray-800">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold tracking-wide">
+              Note<span className="text-indigo-400">Desk</span>
+            </h1>
+            <p className="text-gray-400 text-sm mt-2">
+              Your secure notes, anywhere.
+            </p>
+          </div>
 
-        {/* Tabs */}
-        <div className="flex justify-center mb-8 border-b border-gray-700">
-          <button
-            onClick={() => setActiveTab("login")}
-            className={`flex-1 py-2 text-sm font-medium transition ${
-              activeTab === "login"
-                ? "text-indigo-400 border-b-2 border-indigo-400"
-                : "text-gray-400 hover:text-gray-200"
-            }`}
-          >
-            Login
-          </button>
-          <button
-            onClick={() => setActiveTab("signup")}
-            className={`flex-1 py-2 text-sm font-medium transition ${
-              activeTab === "signup"
-                ? "text-indigo-400 border-b-2 border-indigo-400"
-                : "text-gray-400 hover:text-gray-200"
-            }`}
-          >
-            Sign Up
-          </button>
-        </div>
+          {/* Tabs */}
+          <div className="flex justify-center mb-8 border-b border-gray-700">
+            <button
+              onClick={() => setActiveTab("login")}
+              className={`flex-1 py-2 text-sm font-medium transition ${
+                activeTab === "login"
+                  ? "text-indigo-400 border-b-2 border-indigo-400"
+                  : "text-gray-400 hover:text-gray-200"
+              }`}
+            >
+              Login
+            </button>
+            <button
+              onClick={() => setActiveTab("signup")}
+              className={`flex-1 py-2 text-sm font-medium transition ${
+                activeTab === "signup"
+                  ? "text-indigo-400 border-b-2 border-indigo-400"
+                  : "text-gray-400 hover:text-gray-200"
+              }`}
+            >
+              Sign Up
+            </button>
+          </div>
 
-        {formContent}
+          {formContent}
+        </div>
       </div>
-    </div>
     </div>
   );
 }
