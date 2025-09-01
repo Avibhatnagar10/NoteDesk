@@ -188,7 +188,7 @@ export default function Dashboard() {
         {/* Header */}
         <header className="sticky top-0 z-10 flex h-20 items-center justify-between border-b border-gray-800 bg-[var(--bg-color)]/80 px-8 backdrop-blur-lg">
           <h2 className="text-xl font-bold text-white">NoteDesk</h2>
-          <div className="flex flex-1 items-center justify-center px-12 relative">
+          <div className="hidden sm:flex flex-1 items-center justify-center px-12 relative">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="size-5 text-gray-500 absolute left-16 top-1/2 -translate-y-1/2"
@@ -226,6 +226,16 @@ export default function Dashboard() {
             />
           </div>
         </header>
+          {/* Search (mobile only) */}
+        <div className="sm:hidden px-4 py-2">
+          <input
+            type="text"
+            className="w-full rounded-lg border border-gray-700 bg-transparent py-2 pl-4 pr-4 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-0"
+            placeholder="Search notes..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
 
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto p-8">
@@ -236,8 +246,8 @@ export default function Dashboard() {
             <p className="text-lg text-gray-400">Let your creativity flow.</p>
           </div>
           {/* Toolbar */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex gap-4 ">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-6">
+            <div className="flex flex-wrap gap-2 sm:gap-4 ">
               <button
                 onClick={() => navigate("/notesEditor")}
                 className="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-white font-semibold shadow-md hover:bg-blue-700 transition-colors duration-200"
@@ -373,7 +383,7 @@ export default function Dashboard() {
       </div>
 
       {/* Right Sidebar */}
-      <aside className="hidden w-[320px] lg:flex flex-col gap-8 p-6 border-l border-gray-800 bg-[var(--secondary-color)]/50">
+      <aside className="hidden lg:flex w-[320px] flex-col gap-8 p-6 border-l border-gray-800 bg-[var(--secondary-color)]/50">
         <div className="flex flex-col gap-4">
           <h2 className="text-lg font-bold text-white">Recent Activity</h2>
           <div className="flex flex-col gap-2">
