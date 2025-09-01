@@ -1,0 +1,124 @@
+/* Settings Page Specific Styles */
+:root {
+    /* Using the same variable names as dashboard but with settings page values */
+    --primary-color: #3da2f5;
+    --background-color: #111518;
+    --secondary-background-color: #1b2227;
+    --tertiary-background-color: #283139;
+    --text-primary: #ffffff;
+    --text-secondary: #9cacba;
+    --border-color: #3b4954;
+  }
+  
+  /* Custom switch component styles */
+  .switch-label {
+    position: relative;
+    display: flex;
+    height: 2rem;
+    width: 3.5rem;
+    cursor: pointer;
+    align-items: center;
+    border-radius: 9999px;
+    background-color: var(--tertiary-background-color);
+    padding: 0.25rem;
+    transition: background-color 0.3s ease-in-out;
+  }
+  .switch-label:has(input:checked) {
+    background-color: var(--primary-color);
+  }
+  .switch-handle {
+    height: 1.5rem;
+    width: 1.5rem;
+    border-radius: 9999px;
+    background-color: white;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    transform: translateX(0);
+    transition: transform 0.3s ease-in-out;
+  }
+  .switch-label input:checked + .switch-handle {
+    transform: translateX(1.5rem);
+  }
+  
+  /* Custom styles for form elements to reduce className clutter */
+  .settings-select {
+    margin-top: 0.5rem;
+    width: 100%;
+    border-radius: 0.5rem;
+    color: white;
+    border: 1px solid var(--border-color);
+    background-color: var(--tertiary-background-color);
+    height: 3rem;
+    padding: 0 1rem;
+    font-size: 1rem;
+  }
+  .settings-select:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: 0 0 0 2px var(--primary-color);
+  }
+  
+  .theme-option-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+    padding: 0 1rem;
+    height: 2.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .theme-option-label:has(input:checked) {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    border-width: 2px;
+  }
+  
+  .settings-btn-secondary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
+    height: 2.5rem;
+    padding: 0 1rem;
+    background-color: var(--tertiary-background-color);
+    font-size: 0.875rem;
+    font-weight: 700;
+    transition: background-color 0.2s;
+  }
+  .settings-btn-secondary:hover {
+    background-color: rgba(40, 49, 57, 0.8);
+  }
+  
+  .settings-btn-primary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
+    height: 2.5rem;
+    padding: 0 1rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    transition: background-color 0.2s;
+  }
+  .settings-btn-primary:hover {
+    background-color: rgba(61, 162, 245, 0.8);
+  }
+  
+  /* Custom styling for range input thumb */
+  input[type="range"]::-webkit-slider-thumb {
+    width: 1.25rem;
+    height: 1.25rem;
+    background-color: var(--primary-color);
+    border-radius: 9999px;
+    appearance: none;
+    margin-top: -6px;
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 1.25rem;
+    height: 1.25rem;
+    background-color: var(--primary-color);
+    border-radius: 9999px;
+  }
