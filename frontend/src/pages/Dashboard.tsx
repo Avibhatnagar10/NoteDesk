@@ -1,7 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Dashboard.css"; // Import the stylesheet
-
 
 // --- ICONS ---
 // Using components for icons makes the JSX cleaner
@@ -135,7 +134,32 @@ export default function Dashboard() {
     "Recipes",
   ]);
   const navigate = useNavigate();
+  const [isOnline, setIsOnline] = useState(true);
+  const [lastSync, setLastSync] = useState(new Date().toLocaleString());
 
+  useEffect(() => {
+    if (isOnline) {
+      setLastSync(new Date().toLocaleString());
+      setTick(0);
+    }
+  }, [isOnline]);
+
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTick((t) => t + 1);
+    }, 60000); // every 1 min
+    return () => clearInterval(interval);
+  }, []);
+
+  // Format time difference
+  const getTimeAgo = () => {
+    if (!lastSync) return "";
+    const diffMs = Date.now() - new Date(lastSync).getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    if (diffMins === 0) return "Just now";
+    return `${diffMins}m ago`;
+  };
   const handleTagClick = (tag: string) => {
     setSelectedTags((prevTags) =>
       prevTags.includes(tag)
@@ -177,7 +201,10 @@ export default function Dashboard() {
           <button className="p-3 rounded-lg hover:bg-[var(--accent-color)]/50 transition-colors duration-200">
             <SyncIcon />
           </button>
-          <button onClick={() => navigate("/settings")} className="p-3 rounded-lg hover:bg-[var(--accent-color)]/50 transition-colors duration-200">
+          <button
+            onClick={() => navigate("/settings")}
+            className="p-3 rounded-lg hover:bg-[var(--accent-color)]/50 transition-colors duration-200"
+          >
             <SettingsIcon />
           </button>
         </nav>
@@ -209,11 +236,14 @@ export default function Dashboard() {
             />
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-400">Online</span>
+            <span className="text-sm text-gray-400">
+              {isOnline ? "Online" : "Offline"}
+            </span>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                value=""
+                value={isOnline.toString()}
+                onChange={() => setIsOnline(!isOnline)}
                 className="sr-only peer"
                 defaultChecked
               />
@@ -226,7 +256,7 @@ export default function Dashboard() {
             />
           </div>
         </header>
-          {/* Search (mobile only) */}
+        {/* Search (mobile only) */}
         <div className="sm:hidden px-4 py-2">
           <input
             type="text"
@@ -426,7 +456,13 @@ export default function Dashboard() {
           <div className="flex items-center gap-4 p-4 rounded-xl bg-[var(--accent-color)]/80">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="size-7 text-blue-500 animate-spin-slow"
+              className={`size-7 ${
+                isOnline
+                  ? "text-blue-500 animate-spin-slow"
+                  : isOnline
+                  ? "text-gray-500"
+                  : "text-red-500"
+              }`}
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -435,8 +471,16 @@ export default function Dashboard() {
               <path d="M21 12a9 9 0 1 1-6.219-8.56" />
             </svg>
             <div>
-              <h3 className="font-semibold text-white">Online & Syncing</h3>
-              <p className="text-sm text-gray-400">Last sync: Just now</p>
+              <h3 className="font-semibold text-white">
+                {isOnline
+                  ? "Online & Syncing"
+                  : isOnline
+                  ? "Offline & Not Syncing"
+                  : "Offline & Not Syncing"}
+              </h3>
+              <p className="text-sm text-gray-400">
+            {isOnline ? `Last sync: ${getTimeAgo()}` : "Sync paused"}
+          </p>
             </div>
           </div>
         </div>
