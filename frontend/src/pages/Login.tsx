@@ -137,7 +137,7 @@ export default function LoginPage() {
     if (!validate()) return;
     setIsLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/auth/signup", {
+      const res = await fetch("https://notedesk-backend.onrender.com/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -173,7 +173,7 @@ export default function LoginPage() {
     if (!validate()) return;
     setIsLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/auth/login", {
+      const res = await fetch("https://notedesk-backend.onrender.com/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -378,3 +378,4 @@ export default function LoginPage() {
     </div>
   );
 }
+
