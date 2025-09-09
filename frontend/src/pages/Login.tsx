@@ -143,7 +143,7 @@ export default function LoginPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         username: formData.username,
-        email: formData.email,
+        email: formData.username,
         password: formData.password,
 
       }),
@@ -378,5 +378,6 @@ export default function LoginPage() {
     </div>
   );
 }
+
 
 
