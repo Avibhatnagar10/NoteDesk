@@ -12,7 +12,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route
-          path="/dashboard"
+          path="/dashboard/:workspaceId/:uuid"
           element={
             <ProtectedRoute>
               <Dashboard />
