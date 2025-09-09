@@ -174,9 +174,9 @@ export default function LoginPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          username: formData.username,
-          email: formData.email, // can be email or username
-          password: formData.password,
+           identifier: formData.username, // can be username OR email
+            password: formData.password,
+        }),
         }),
       });
 
@@ -378,6 +378,7 @@ export default function LoginPage() {
     </div>
   );
 }
+
 
 
 
