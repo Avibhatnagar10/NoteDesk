@@ -45,14 +45,18 @@ app.use('/api/auth', authRoutes);
 app.get('/', (req, res) => {
   res.send('API is running...');
 });
-app.get('/dashboard', verifyJwt, (req, res) => {
-  res.send(`Welcome to your dashboard, user ${req.user.username}`);
+app.get('/dashboard/:workspaceId/:uuid', verifyJwt, (req, res) => {
+  res.send(`Welcome to your dashboard, user ${req.user.username} for workspace ${req.params.workspaceId} and user ${req.params.uuid}`);
 });
 app.get('/profile', verifyJwt, (req, res) => {
-  res.send(`This is your profile, user ${req.user.email}`);
+  res.send(`This is your profile, user ${req.user.email} for workspace ${req.params.workspaceId} and user ${req.params.uuid}`);
 });
 app.get('/notes', verifyJwt, (req, res) => {
   res.send(`Here are your notes, user ${req.user.email}`);
+});
+// get notes for a specific workspace and user
+app.get('/notes/:workspaceId/:uuid', verifyJwt, (req, res) => {
+  res.send(`Here are your notes, user ${req.user.email} for workspace ${req.params.workspaceId} and user ${req.params.uuid}`);
 });
 
 
@@ -69,10 +73,19 @@ async function startServer() {
     console.log("✅ Connected to MongoDB");
 
     // Redis
-    redisClient = createClient();
-    redisClient.on("error", (err) => console.error("Redis Client Error", err));
+    if (process.env.REDIS_URL) {
+  redisClient = createClient({ url: process.env.REDIS_URL });
+  redisClient.on("error", (err) => console.error("Redis Client Error", err));
+
+  try {
     await redisClient.connect();
     console.log("✅ Connected to Redis");
+  } catch (err) {
+    console.error("❌ Redis connection failed:", err);
+  }
+} else {
+  console.log("⚠️ Redis not configured, skipping connection...");
+}
 
     // Start HTTP + Socket.io server
     const PORT = process.env.PORT || 5000;
