@@ -136,6 +136,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [isOnline, setIsOnline] = useState(true);
   const [lastSync, setLastSync] = useState(new Date().toLocaleString());
+  const [, setLogout] = useState(false);
 
   useEffect(() => {
     if (isOnline) {
@@ -143,7 +144,11 @@ export default function Dashboard() {
       setTick(0);
     }
   }, [isOnline]);
-
+  const handleLogout = () => {
+    setLogout(true);
+    localStorage.removeItem("token");
+    window.location.href = "/";
+  };
   const [, setTick] = useState(0);
   useEffect(() => {
     const interval = setInterval(() => {
@@ -236,9 +241,25 @@ export default function Dashboard() {
             />
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-400">
+            <button
+              onClick={handleLogout}
+              className="text-sm font-medium px-5 py-2 rounded-lg bg-gradient-to-r from-red-500 to-red-600 text-white shadow-md hover:from-red-600 hover:to-red-700 hover:scale-105 transition-transform duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2"
+            >
+              Logout
+            </button>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <span
+              className={`text-sm font-semibold px-4 py-2 rounded-full shadow-sm transition-colors duration-300 ${
+                isOnline
+                  ? "bg-blue-500 text-white ring-2 ring-blue-400"
+                  : "bg-gray-400 text-white ring-2 ring-gray-300"
+              }`}
+            >
               {isOnline ? "Online" : "Offline"}
             </span>
+
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
@@ -479,8 +500,8 @@ export default function Dashboard() {
                   : "Offline & Not Syncing"}
               </h3>
               <p className="text-sm text-gray-400">
-            {isOnline ? `Last sync: ${getTimeAgo()}` : "Sync paused"}
-          </p>
+                {isOnline ? `Last sync: ${getTimeAgo()}` : "Sync paused"}
+              </p>
             </div>
           </div>
         </div>
