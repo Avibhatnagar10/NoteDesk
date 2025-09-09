@@ -84,8 +84,7 @@ export default function LoginPage() {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -133,55 +132,56 @@ export default function LoginPage() {
     return valid;
   };
 
- const handleSignup = async (e: React.FormEvent) => {
-  e.preventDefault();
-  if (!validate()) return;
- setIsLoading(true);
-  try {
-    const res = await fetch("https://notedesk-backend.onrender.com/api/auth/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        username: formData.username,
-        email: formData.username,
-        password: formData.password,
-
-      }),
-    });
-
-    const data = await res.json();
-
-    if (res.ok) {
-      // alert("Signup successful! Please login.");
-      // reset form and switch to login tab
-      setFormData({ username: "", email: "", password: "", confirmPassword: "" });
-      setActiveTab("login");
-    } else {
-      alert(data.message || "Signup failed");
-    }
-  } catch (err) {
-    console.error(err);
-    alert("Server error. Please try again later.");
-  }
-};
-
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
- setIsLoading(true);
+    setIsLoading(true);
     try {
-      const res = await fetch("https://notedesk-backend.onrender.com/api/auth/login", {
+      const res = await fetch("http://localhost:5000/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-           identifier: formData.username, // can be username OR email
-            password: formData.password,
-        }),
+          username: formData.username,
+          email: formData.email,
+          password: formData.password,
         }),
       });
 
       const data = await res.json();
 
+      if (res.ok) {
+        // alert("Signup successful! Please login.");
+        // reset form and switch to login tab
+        setFormData({
+          username: "",
+          email: "",
+          password: "",
+          confirmPassword: "",
+        });
+        setActiveTab("login");
+      } else {
+        alert(data.message || "Signup failed");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Server error. Please try again later.");
+    }
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validate()) return;
+    setIsLoading(true);
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          identifier: formData.username, // can be username OR email
+          password: formData.password,
+        }),
+      });
+      const data = await res.json();
       if (res.ok) {
         // Save JWT in localStorage
         localStorage.setItem("token", data.token);
@@ -378,7 +378,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
-
-
-
