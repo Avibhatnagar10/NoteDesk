@@ -138,13 +138,14 @@ export default function LoginPage() {
   if (!validate()) return;
  setIsLoading(true);
   try {
-    const res = await fetch("https://notedesk-backend.onrender.com/api/auth/signup", {
+    const res = await fetch("http://localhost:5000/api/auth/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         username: formData.username,
         email: formData.email,
         password: formData.password,
+
       }),
     });
 
@@ -169,12 +170,12 @@ export default function LoginPage() {
     if (!validate()) return;
  setIsLoading(true);
     try {
-      const res = await fetch("https://notedesk-backend.onrender.com/api/auth/login", {
+      const res = await fetch("http://localhost:5000/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           username: formData.username,
-          email: formData.username, // can be email or username
+          email: formData.email, // can be email or username
           password: formData.password,
         }),
       });
@@ -186,7 +187,7 @@ export default function LoginPage() {
         localStorage.setItem("token", data.token);
 
         // redirect to dashboard
-        window.location.href = "/dashboard";
+        window.location.href = `/dashboard/${data.user.workspaceId}/${data.user.uuid}`;
       } else {
         alert(data.message || "Invalid credentials");
       }
@@ -377,5 +378,4 @@ export default function LoginPage() {
     </div>
   );
 }
-
 
